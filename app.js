@@ -62,33 +62,32 @@ var async      = require( 'async' ),
     answerDnsRequest = function ( req, res ) {
       var f = [],
           ipType = req.address.family.toLowerCase(),
-          dnsAlt = ( ipType == 'ipv6' ? altDns6 : altDns ),
-          ret = ip.address( 'private', ipType );
+          dnsAlt = ( ipType == 'ipv6' ? altDns6 : altDns );
 
       req.question.forEach( function ( question ) {
         var adDomain = dnsCache.get( question.name );
 
         if ( adDomain ) {
-          if ( ipType == 'ipv6' )
-            res
-            .answer
-            .push(
-              dns.AAAA({
-                name: question.name,
-                address: ret,
-                ttl: 600
-              })
-            )
-          else
-            res
-            .answer
-            .push(
-              dns.A({
-                name: question.name,
-                address: ret,
-                ttl: 600
-              })
-            )
+          res
+          .answer
+          .push(
+            dns.A({
+              name: question.name,
+              address: ip.address( 'private', 'ipv4' ),
+              ttl: 600
+            })
+          )
+
+          res
+          .answer
+          .push(
+            dns.AAAA({
+              name: question.name,
+              address: ip.address( 'private', 'ipv6' ),
+              ttl: 600
+            })
+          )
+
 
           dnsCache.set( question.name, { count: ++adDomain.count } );
         } else
