@@ -66,15 +66,26 @@ var async      = require( 'async' ),
 
       req.question.forEach( function ( question ) {
         if ( question.name == 'test.lan' ) {
-          res
-          .answer
-          .push(
-            dns.A({
-              name: 'test.lan',
-              address: ret,
-              ttl: 600
-            })
-          )
+          if ( ipType == 'ipv6' )
+            res
+            .answer
+            .push(
+              dns.AAAA({
+                name: 'test.lan',
+                address: ret,
+                ttl: 600
+              })
+            )
+          else
+            res
+            .answer
+            .push(
+              dns.A({
+                name: 'test.lan',
+                address: ret,
+                ttl: 600
+              })
+            )
         } else
           f.push( function ( cb ) { proxyDnsRequest( dnsAlt, question, res, cb ) });
       });
