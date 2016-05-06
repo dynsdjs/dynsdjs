@@ -44,19 +44,19 @@ var async      = require( 'async' ),
       process.env.DNS6ALT1 || '2001:4860:4860::8844'
     ],
     proxyDnsRequest = function ( dnsAlt, question, response, callback ) {
-      var request = dns.Request({
+      var req = dns.Request({
         question: question, // forwarding the question
         server: { address: dnsAlt[ Math.round( Math.random() ) ], 'port': 53, 'type': 'udp' },  // this is the DNS server we are asking
         timeout: 1000
       });
 
       // when we get answers, append them to the response
-      request.on('message', function (err, msg) {
+      req.on('message', function (err, msg) {
         msg.answer.forEach( function ( a ) { response.answer.push(a) });
       });
 
-      request.on('end', callback);
-      request.send();
+      req.on('end', callback);
+      req.send();
     }
     answerDnsRequest = function ( req, res ) {
       var f = [],
