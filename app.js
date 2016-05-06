@@ -23,18 +23,18 @@ SOFTWARE.
 **/
 
 var async      = require( 'async' ),
-    express    = require( 'express' ),                                 // call express
-    app        = express(),                                            // define our app using express
+    express    = require( 'express' ),                                                   // call express
+    app        = express(),                                                              // define our app using express
     bodyParser = require( 'body-parser' ),
-    dns        = require( 'native-dns' ),                              // call dns server
-    dnsServer  = dns.createServer(),                                   // create DNS server
-    dnsServer6 = dns.createServer( { dgram_type: 'udp6' }),            // create DNS server for IPv6 connections
+    dns        = require( 'native-dns' ),                                                // call dns server
+    dnsServer  = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),  // create DNS server
+    dnsServer6 = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } ),  // create DNS server for IPv6 connections
     NodeCache  = require( 'node-cache' ),
     ip         = require( 'ip' ),
-    dnsCache   = new NodeCache(),                                      // define our dns cache handler,
-    router     = express.Router(),                                     // get an instance of the express Router
-    httpPort   = process.env.HTTPPORT || 80,                           // set our HTTP port
-    dnsPort    = process.env.DNSPORT || 53,                            // set out DNS server port
+    dnsCache   = new NodeCache(),                                                        // define our dns cache handler,
+    router     = express.Router(),                                                       // get an instance of the express Router
+    httpPort   = process.env.HTTPPORT || 80,                                             // set our HTTP port
+    dnsPort    = process.env.DNSPORT || 53,                                              // set out DNS server port
     altDns     = [
       process.env.DNSALT1 || '8.8.8.8',
       process.env.DNSALT2 || '8.8.4.4'
@@ -107,7 +107,7 @@ console.log( '>> HTTP Port listening on: ' + httpPort );
 
 // START THE DNS SERVER
 dnsServer.on( 'request', answerDnsRequest );
-//dnsServer6.on( 'request', answerDnsRequest );
+dnsServer6.on( 'request', answerDnsRequest );
 dnsServer.serve( dnsPort );
-//dnsServer6.serve( dnsPort );
+dnsServer6.serve( dnsPort );
 console.log( '>> DNS Port listening on: ' + dnsPort );
