@@ -31,7 +31,8 @@ var async      = require( 'async' ),
     dnsServer6 = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } ),  // create DNS server for IPv6 connections
     NodeCache  = require( 'node-cache' ),
     ip         = require( 'ip' ),
-    dnsCache   = new NodeCache(),                                                        // define our dns cache handler,
+    request    = require( 'request' ),
+    dnsCache   = new NodeCache({ useClones: false }),                                    // define our dns cache handler,
     router     = express.Router(),                                                       // get an instance of the express Router
     httpPort   = process.env.HTTPPORT || 80,                                             // set our HTTP port
     dnsPort    = process.env.DNSPORT || 53,                                              // set out DNS server port
@@ -65,13 +66,15 @@ var async      = require( 'async' ),
           ret = ip.address( 'private', ipType );
 
       req.question.forEach( function ( question ) {
-        if ( question.name == 'test.lan' ) {
+        var adDomain = dnsCache.get( question.name );
+
+        if ( adDomain ) {
           if ( ipType == 'ipv6' )
             res
             .answer
             .push(
               dns.AAAA({
-                name: 'test.lan',
+                name: question.name,
                 address: ret,
                 ttl: 600
               })
@@ -81,16 +84,39 @@ var async      = require( 'async' ),
             .answer
             .push(
               dns.A({
-                name: 'test.lan',
+                name: question.name,
                 address: ret,
                 ttl: 600
               })
             )
+
+          dnsCache.set( question.name, { count: ++adDomain.count } );
         } else
           f.push( function ( cb ) { proxyDnsRequest( dnsAlt, question, res, cb ) });
       });
 
       async.parallel(f, function() { res.send(); });
+    },
+    parseHostsRecords = function ( url ) {
+      var lineReader = require('readline').createInterface({
+            input: request( url )
+          });
+
+      lineReader
+      .on('line', function (line) {
+        if ( !line.startsWith( '#' ) ) {
+          var host = line.split(' '),
+              domain = '';
+
+          if ( host.length < 2 )
+            domain = host[0];
+          else
+            domain = host[1];
+
+          dnsCache
+          .set( domain, { count: 1 } );
+        }
+      })
     }
 
 // configure app to use bodyParser()
@@ -122,3 +148,14 @@ dnsServer6.on( 'request', answerDnsRequest );
 dnsServer.serve( dnsPort );
 dnsServer6.serve( dnsPort );
 console.log( '>> DNS Port listening on: ' + dnsPort );
+
+// READ THE AD LIST
+var lineReader = require('readline').createInterface({
+  input: require('fs').createReadStream('ads.list')
+});
+
+lineReader
+.on('line', function (line) {
+  if ( line.startsWith( 'http' ) )
+    parseHostsRecords( line );
+});
