@@ -125,7 +125,17 @@ app.use( bodyParser.json() );
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get( '/', function( req, res ) {
-    res.json( { message: 'hooray! welcome to our api!' } );
+  dnsCache.keys( function ( err, keys ){
+    var ret = {}
+
+    keys.forEach( function ( key ){
+      ret[key] = dnsCache.get( key );
+    })
+
+    res.json({
+      keys: ret
+    });
+  })
 });
 
 // more routes for our API will happen here
