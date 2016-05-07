@@ -73,7 +73,7 @@ var async      = require( 'async' ),
           .push(
             dns.A({
               name: question.name,
-              address: ip.address( 'private', 'ipv4' ),
+              address: ip.address( 'public', 'ipv4' ),
               ttl: 600
             })
           )
@@ -83,7 +83,7 @@ var async      = require( 'async' ),
           .push(
             dns.AAAA({
               name: question.name,
-              address: ip.address( 'private', 'ipv6' ),
+              address: ip.address( 'public', 'ipv6' ),
               ttl: 600
             })
           )
