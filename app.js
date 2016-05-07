@@ -104,7 +104,7 @@ var async      = require( 'async' ),
       lineReader
       .on('line', function (line) {
         if ( !line.startsWith( '#' ) ) {
-          var host = line.split('/\s+/'),
+          var host = line.split( /\s+/ ),
               domain = '';
 
           if ( host.length < 2 )
