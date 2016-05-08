@@ -47,7 +47,8 @@ Dns({
     // Run the API + Static file server
     Api({
       cache: dnsCache,
-      port: process.env.HTTPPORT || 80
+      port: process.env.HTTPPORT || 80,
+      wwwPath: './www'
     });
   }
 });

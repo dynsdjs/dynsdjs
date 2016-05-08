@@ -52,7 +52,7 @@ module.exports = function ( options ) {
 
   // REGISTER OUR ROUTES -------------------------------
   // serve static files through the main url
-  app.use( express.static( 'www' ) );
+  app.use( express.static( options.wwwPath ) );
   // all of our routes will be prefixed with /api
   app.use( '/api', router );
 
