@@ -55,3 +55,21 @@ Sure! This project is really in pre-alpha, but in it's way is already working. A
 - 0.4: Code refactoring and/or optimizations where possible ( `harder better faster stronger ♪` )
 - 0.5..0.9: Rainbows and Unicorns
 - 1.0: Final consumer version. ready for Donkeys :)
+
+# API Schema
+Whenever you will call the URL `http://localhost/api` you will be returned with a JSON answer like this
+
+```js
+{
+  "clients": { // All the clients that did a request to this DNS
+    "127.0.0.1": {
+      "ads": 1, // How many AD domains this client tryed to lookup
+      "generic": 2 // How many non-AD domains this client tryed to lookup
+    }
+  },
+  "totalEntries": 105708, // How many AD domains entries does the server knows
+  "totalHits": 3 // How many hits got the DNS system once it was running
+}
+```
+
+Please remember that this Schema is still **Work In Progress**!
