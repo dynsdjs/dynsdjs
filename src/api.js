@@ -33,27 +33,27 @@ module.exports = function ( options ) {
   app.use( bodyParser.urlencoded( { extended: true } ) );
   app.use( bodyParser.json() );
 
-  // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
   router.get( '/', function( req, res ) {
     options.cache.keys( function ( err, keys ){
-      var ret = {}
+      // Set it globally
+      options.schema.totalEntries = keys.length;
+
+      // Start the local response logic
+      var ret = options.schema;
 
       keys.forEach( function ( key ){
-        ret[key] = options.cache.get( key );
+        var o = options.cache.get( key );
+        ret.totalHits += o.hit;
       })
 
-      res.json({
-        keys: ret
-      });
+      res.json( ret );
     })
   });
 
-  // more routes for our API will happen here
-
-  // REGISTER OUR ROUTES -------------------------------
+  // REGISTER OUR ROUTE -------------------------------
   // serve static files through the main url
   app.use( express.static( options.wwwPath ) );
-  // all of our routes will be prefixed with /api
+  // /api will be the entry point to the REST API
   app.use( '/api', router );
 
   // START THE HTTP SERVER
