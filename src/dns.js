@@ -25,10 +25,39 @@ SOFTWARE.
 module.exports = function ( options ) {
   var async      = require( 'async' ),
       dns        = require( 'native-dns' ),                                                       // call dns server
-      dnsServer  = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),         // create DNS server
-      dnsServer6 = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } ),         // create DNS server for IPv6 connections
+      udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),         // create DNS server
+      udp6Server = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } ),         // create DNS server for IPv6 connections
+      tcpServer  = dns.createTCPServer(),                                                         // create DNS server which listens on TCP connections
       ip         = require( 'ip' ),
       request    = require( 'request' ),
+      parseHostsRecords = function ( url, cb ) {
+        var lineReader = require('readline').createInterface({
+              input: request( url )
+            });
+
+        try {
+          lineReader
+          .on( 'line', function (line) {
+            if ( !line.startsWith( '#' ) ) {
+              var host = line.split( /\s+/ ),
+                  domain = '';
+
+              if ( host.length < 2 )
+                domain = host[0];
+              else
+                domain = host[1];
+
+              options.cache
+              .set( domain, { hit: 0 } );
+            }
+          })
+          .on( 'close', function (){
+            cb(null);
+          })
+        } catch ( ex ) {
+          cb( ex );
+        }
+      },
       proxyDnsRequest = function ( dnsAlt, question, response, callback ) {
         var req = dns.Request({
           question: question, // forwarding the question
@@ -48,6 +77,13 @@ module.exports = function ( options ) {
         var f = [],
             ipType = req.address.family.toLowerCase(),
             dnsAlt = ( ipType == 'ipv6' ? options.resolver.ip6 : options.resolver.ip4 );
+
+        if ( !( req.address.address in options.schema.clients ) ) {
+          options.schema.clients[ req.address.address ] = {
+            'ads': 0,
+            'generic': 0
+          }
+        }
 
         req.question.forEach( function ( question ) {
           var adDomain = options.cache.get( question.name );
@@ -73,49 +109,26 @@ module.exports = function ( options ) {
               })
             )
 
+            options.schema.clients[ req.address.address ].ads++;
 
-            options.cache.set( question.name, { count: ++adDomain.count } );
-          } else
+            options.cache.set( question.name, { hit: ++adDomain.hit } );
+          } else {
+            options.schema.clients[ req.address.address ].generic++;
             f.push( function ( cb ) { proxyDnsRequest( dnsAlt, question, res, cb ) });
+          }
         });
 
         async.parallel(f, function() { res.send(); });
       },
-      parseHostsRecords = function ( url, cb ) {
-        var lineReader = require('readline').createInterface({
-              input: request( url )
-            });
-
-        try {
-          lineReader
-          .on( 'line', function (line) {
-            if ( !line.startsWith( '#' ) ) {
-              var host = line.split( /\s+/ ),
-                  domain = '';
-
-              if ( host.length < 2 )
-                domain = host[0];
-              else
-                domain = host[1];
-
-              options.cache
-              .set( domain, { count: 1 } );
-            }
-          })
-          .on( 'close', function (){
-            cb(null);
-          })
-        } catch ( ex ) {
-          cb( ex );
-        }
-      },
       startDns = function () {
         // START THE DNS SERVER
-        dnsServer.on( 'request', answerDnsRequest );
-        dnsServer6.on( 'request', answerDnsRequest );
-        dnsServer.serve( options.port );
-        dnsServer6.serve( options.port );
-        console.log( '>> DNS Port listening on: ' + options.port );
+        tcpServer.on( 'request', answerDnsRequest );
+        udp4Server.on( 'request', answerDnsRequest );
+        udp6Server.on( 'request', answerDnsRequest );
+        tcpServer.serve( options.port );
+        udp4Server.serve( options.port );
+        udp6Server.serve( options.port );
+        console.log( '>> DNS Port listening on: ' + options.port + ' [TCP/UDP]' );
         if ( options.ready ) options.ready();
       }
 
