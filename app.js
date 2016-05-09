@@ -25,13 +25,19 @@ SOFTWARE.
 var Dns        = require( './src/dns.js' ),
     Api        = require( './src/api.js' ),
     NodeCache  = require( 'node-cache' ),
-    dnsCache   = new NodeCache({ useClones: false });
+    dnsCache   = new NodeCache({ useClones: false }),
+    apiSchema  = {
+      'clients': {},
+      'totalEntries': 0,
+      'totalHits': 0
+    }
 
 console.log( '>> Fetching the latest entries from ads.list...' )
 
 // Run the DNS Server
 Dns({
   cache: dnsCache,
+  schema: apiSchema,
   port: process.env.DNSPORT || 53,
   resolver: {
     ip4: [
@@ -47,6 +53,7 @@ Dns({
     // Run the API + Static file server
     Api({
       cache: dnsCache,
+      schema: apiSchema,
       port: process.env.HTTPPORT || 80,
       wwwPath: './www'
     });
