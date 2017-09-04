@@ -20,5 +20,9 @@ module.exports = {
     library: 'ZeroAds',
     libraryTarget: "umd2"
   },
-  plugins: []
+  plugins: [
+    // Fix "require is not a function" for restify
+    // See https://github.com/felixge/node-formidable/issues/337#issuecomment-153408479
+    new webpack.DefinePlugin({ "global.GENTLY": false })
+  ]
 };
