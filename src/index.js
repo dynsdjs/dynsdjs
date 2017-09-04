@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 **/
 
-var Dns        = require( './src/dns.js' ),
-    Api        = require( './src/api.js' ),
+var Dns        = require( './modules/dns.js' ),
+    Api        = require( './modules/api.js' ),
     NodeCache  = require( 'node-cache' ),
     dnsCache   = new NodeCache({ useClones: false }),
     apiSchema  = {
