@@ -8,10 +8,16 @@
   "bugs": {
     "url": "https://github.com/julianxhokaxhiu/zeroads/issues"
   },
-  "main": "app.js",
+  "main": "dist/ZeroAds.js",
   "scripts": {
-    "live": "node app.js",
-    "test": "HTTPPORT=8080 DNSPORT=5353 node app.js"
+    "build:dev": "webpack",
+    "build:watch": "webpack --watch",
+    "prepublish": "webpack --env=prod",
+    "start": "node ./bin/cli.js",
+    "test": "HTTPPORT=8080 DNSPORT=5353 node ./bin/cli.js"
+  },
+  "bin": {
+    "zeroads": "./bin/cli.js"
   },
   "repository": {
     "type": "git",
@@ -22,13 +28,16 @@
     "dns",
     "rest"
   ],
-  "dependencies": {
-    "express": "~4.0.0",
-    "body-parser": "~1.0.1",
-    "native-dns": "~0.7.0",
-    "ip": "~1.1.3",
-    "node-cache": "~3.2.1",
+  "devDependencies": {
     "async": "~1.5.2",
-    "request": "~2.72.0"
+    "babili-webpack-plugin": "^0.1.2",
+    "body-parser": "~1.0.1",
+    "express": "~4.0.0",
+    "ip": "~1.1.3",
+    "native-dns": "~0.7.0",
+    "node-cache": "~3.2.1",
+    "npm-check-updates": "^2.12.1",
+    "request": "~2.72.0",
+    "webpack": "^3.3.0"
   }
 }
