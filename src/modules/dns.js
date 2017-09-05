@@ -1,59 +1,68 @@
-import async from 'async'
 import dns from 'native-dns'
+import fetch from 'node-fetch'
 import fs from 'fs'
 import ip from 'ip'
-import readline from 'readline'
-import request from 'request'
+//import readline from 'readline'
 
-function parseHostsRecords ( url, cb ) {
-  var lineReader = readline.createInterface({
-        input: request( url )
-      })
+/*function parseHostsRecords ( url, cb ) {
+  fetch( url )
+    .then( res => {})
+    .then( body => {
+      if ( body ) {
+        body
+          .split('\n')
+          .forEach(
+            ( line ) => {
+              if ( !line.startsWith( '#' ) ) {
+                var host = line.split( /\s+/ ),
+                    domain = ''
 
-  try {
-    lineReader
-    .on( 'line', function (line) {
-      if ( !line.startsWith( '#' ) ) {
-        var host = line.split( /\s+/ ),
-            domain = ''
+                if ( host.length < 2 )
+                  domain = host[0]
+                else
+                  domain = host[1]
 
-        if ( host.length < 2 )
-          domain = host[0]
-        else
-          domain = host[1]
-
-        global.zeroDns.dns.cache
-        .set( domain, { hit: 0 } )
+                global.zeroDns.dns.cache
+                .set( domain, { hit: 0 } )
+              }
+            }
+          )
+          cb()
       }
     })
-    .on( 'close', function (){
-      cb(null)
-    })
-  } catch ( ex ) {
-    cb( ex )
-  }
 }
+*/
 
-function proxyDnsRequest ( dnsAlt, question, response, callback ) {
-  var req = dns.Request({
-    question: question, // forwarding the question
-    server: { address: dnsAlt[ Math.round( Math.random() ) ], 'port': 53, 'type': 'udp' },  // this is the DNS server we are asking
-    timeout: 1000
-  })
+function proxyDnsRequest ( ipType, question, response ) {
+  const resolver = global.zeroDns.dns.resolver[ ipType ][ Math.round( Math.random() ) ]
 
-  // when we get answers, append them to the response
-  req.on('message', function (err, msg) {
-    msg.answer.forEach( function ( a ) { response.answer.push(a) })
-  })
-
-  req.on('end', callback)
-  req.send()
+  return new Promise(
+    ( resolve, reject ) => {
+      dns
+        .Request({
+          question: question,
+          server: {
+            address: resolver,
+            'port': 53,
+            'type': 'udp'
+          },
+          timeout: 1000
+        })
+        .on( 'timeout', () => reject( `>> DNS: Recursive question '${question.name}' went in timeout with resolver '${resolver}:53'` ) )
+        .on( 'message',
+          (err, msg) => {
+            msg.answer
+              .forEach( answer => response.answer.push( answer ) )
+          }
+        )
+        .on( 'end', resolve )
+        .send()
+    }
+  )
 }
 
 function answerDnsRequest ( req, res ) {
-  var f = [],
-      ipType = req.address.family.toLowerCase(),
-      dnsAlt = ( ipType == 'ipv6' ? global.zeroDns.dns.resolver.ip6 : global.zeroDns.dns.resolver.ip4 )
+  let promises = []
 
   if ( !( req.address.address in global.zeroDns.http.stats.clients ) ) {
     global.zeroDns.http.stats.clients[ req.address.address ] = {
@@ -71,7 +80,7 @@ function answerDnsRequest ( req, res ) {
       .push(
         dns.A({
           name: question.name,
-          address: ip.address( 'public', 'ipv4' ),
+          address: ip.address( 'private', 'ipv4' ),
           ttl: 600
         })
       )
@@ -81,7 +90,7 @@ function answerDnsRequest ( req, res ) {
       .push(
         dns.AAAA({
           name: question.name,
-          address: ip.address( 'public', 'ipv6' ),
+          address: ip.address( 'private', 'ipv6' ),
           ttl: 600
         })
       )
@@ -91,27 +100,34 @@ function answerDnsRequest ( req, res ) {
       global.zeroDns.dns.cache.set( question.name, { hit: ++adDomain.hit } )
     } else {
       global.zeroDns.http.stats.clients[ req.address.address ].generic++
-      f.push( function ( cb ) { proxyDnsRequest( dnsAlt, question, res, cb ) })
+
+      promises.push(
+        proxyDnsRequest( req.address.family.toLowerCase(), question, res )
+      )
     }
   })
 
-  async.parallel(f, function() { res.send() })
+  Promise
+    .all( promises )
+    .then( () => res.send() )
+    .catch( err => console.log( err ) )
 }
 
 export default () => {
-  var udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),         // create DNS server
-      udp6Server = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } ),         // create DNS server for IPv6 connections
-      tcpServer  = dns.createTCPServer(),                                                         // create DNS server which listens on TCP connections
-      urls = [],
+  var udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),
+      udp6Server = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } ),
+      tcpServer  = dns.createTCPServer()
+      /*urls = [],
       lineReader = readline.createInterface({
         input: fs.createReadStream('ads.list')
-      })
+      })*/
 
   return Promise
     .resolve()
     .then(
       () => {
-        return new Promise (
+        return Promise.resolve()
+        /*return new Promise (
           ( resolve, reject ) => {
             lineReader
               .on( 'line', function (line) {
@@ -126,7 +142,7 @@ export default () => {
                 })
               })
           }
-        )
+        )*/
       }
     )
     .then(
