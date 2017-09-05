@@ -8,11 +8,11 @@ export default function Config () {
           cache: new NodeCache({ useClones: false }),
           port: process.env.DNSPORT || 53,
           resolver: {
-            ip4: [
+            ipv4: [
               process.env.DNSALT1 || '8.8.8.8',
               process.env.DNSALT2 || '8.8.4.4'
             ],
-            ip6: [
+            ipv6: [
               process.env.DNS6ALT1 || '2001:4860:4860::8888',
               process.env.DNS6ALT1 || '2001:4860:4860::8844'
             ]
