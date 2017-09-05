@@ -72,7 +72,7 @@ function answerDnsRequest ( req, res ) {
   }
 
   req.question.forEach( function ( question ) {
-    var adDomain = global.zeroDns.dns.cache.get( question.name )
+    const adDomain = global.zeroDns.dns.cache.get( question.name )
 
     if ( adDomain ) {
       res
@@ -114,9 +114,9 @@ function answerDnsRequest ( req, res ) {
 }
 
 export default () => {
-  var udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),
-      udp6Server = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } ),
-      tcpServer  = dns.createTCPServer()
+  const udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),
+        udp6Server = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } ),
+        tcpServer  = dns.createTCPServer()
       /*urls = [],
       lineReader = readline.createInterface({
         input: fs.createReadStream('ads.list')
