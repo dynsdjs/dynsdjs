@@ -76,24 +76,24 @@ function answerDnsRequest ( req, res ) {
 
     if ( adDomain ) {
       res
-      .answer
-      .push(
-        dns.A({
-          name: question.name,
-          address: ip.address( 'private', 'ipv4' ),
-          ttl: 600
-        })
-      )
+        .answer
+        .push(
+          dns.A({
+            name: question.name,
+            address: ip.address( 'private', 'ipv4' ),
+            ttl: 600
+          })
+        )
 
       res
-      .answer
-      .push(
-        dns.AAAA({
-          name: question.name,
-          address: ip.address( 'private', 'ipv6' ),
-          ttl: 600
-        })
-      )
+        .answer
+        .push(
+          dns.AAAA({
+            name: question.name,
+            address: ip.address( 'private', 'ipv6' ),
+            ttl: 600
+          })
+        )
 
       global.zeroDns.http.stats.clients[ req.address.address ].ads++
 
