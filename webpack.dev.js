@@ -16,8 +16,8 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'ZeroAds.js',
-    library: 'ZeroAds',
+    filename: 'Dynsd.js',
+    library: 'Dynsd',
     libraryTarget: "umd2"
   },
   plugins: [

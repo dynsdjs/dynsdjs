@@ -1,5 +1,5 @@
-# zeroads
-DNS Server + REST API all bundled in a single Node.js application
+# dynsdjs
+Dead-simple DNS Server Daemon written in NodeJS
 
 # Features
 - A fully functional IPv4/IPv6 DNS Server ( test it yourself with `dig -4` and `dig -6` )
@@ -8,24 +8,24 @@ DNS Server + REST API all bundled in a single Node.js application
 # Installation
 The Git way:
 ```bash
-git clone https://github.com/julianxhokaxhiu/zeroads.git
-cd zeroads
+git clone https://github.com/julianxhokaxhiu/dynsdjs.git
+cd dynsdjs
 npm install
 npm link # sudo may be required, depending on your environment config
-zeroads # sudo is required to bind port 80 and 53
+dynsd # sudo is required to bind port 80 and 53
 ```
 
 The Zip way:
 ```bash
-wget https://github.com/julianxhokaxhiu/zeroads/archive/master.zip
+wget https://github.com/julianxhokaxhiu/dynsdjs/archive/master.zip
 unzip master.zip
-cd zeroads-master
+cd dynsdjs-master
 npm link # sudo may be required, depending on your environment config
-zeroads # sudo is required to bind port 80 and 53
+dynsd # sudo is required to bind port 80 and 53
 ```
 
 # Options
-You can configure `zeroads` through Environment variables
+You can configure `dynsd` through Environment variables
 
 - `HTTPPORT` for the HTTP service ( default is `80` )
 - `DNSPORT` for the DNS service ( default is `53` )
@@ -33,7 +33,7 @@ You can configure `zeroads` through Environment variables
 ## Example
 
 ```bash
-$ HTTPPORT=8081 zeroads
+$ HTTPPORT=8081 dynsd
 ```
 See also [package.json](package.json#L17) as a real world example.
 

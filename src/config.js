@@ -3,7 +3,7 @@ import NodeCache from 'node-cache'
 export default function Config () {
   return new Promise(
     ( resolve, reject ) => {
-      global.zeroDns = {
+      global.dynsd = {
         dns: {
           cache: new NodeCache({ useClones: false }),
           port: process.env.DNSPORT || 53,

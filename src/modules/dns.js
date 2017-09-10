@@ -4,7 +4,7 @@ import fs from 'fs'
 import ip from 'ip'
 
 function proxyDnsRequest ( ipType, question, response ) {
-  const resolver = global.zeroDns.dns.resolver[ ipType ][ Math.round( Math.random() ) ]
+  const resolver = global.dynsd.dns.resolver[ ipType ][ Math.round( Math.random() ) ]
 
   return new Promise(
     ( resolve, reject ) => {
@@ -34,15 +34,15 @@ function proxyDnsRequest ( ipType, question, response ) {
 function answerDnsRequest ( req, res ) {
   let promises = []
 
-  if ( !( req.address.address in global.zeroDns.http.stats.clients ) ) {
-    global.zeroDns.http.stats.clients[ req.address.address ] = {
+  if ( !( req.address.address in global.dynsd.http.stats.clients ) ) {
+    global.dynsd.http.stats.clients[ req.address.address ] = {
       'ads': 0,
       'generic': 0
     }
   }
 
   req.question.forEach( function ( question ) {
-    const adDomain = global.zeroDns.dns.cache.get( question.name )
+    const adDomain = global.dynsd.dns.cache.get( question.name )
 
     if ( adDomain ) {
       res
@@ -65,11 +65,11 @@ function answerDnsRequest ( req, res ) {
           })
         )
 
-      global.zeroDns.http.stats.clients[ req.address.address ].ads++
+      global.dynsd.http.stats.clients[ req.address.address ].ads++
 
-      global.zeroDns.dns.cache.set( question.name, { hit: ++adDomain.hit } )
+      global.dynsd.dns.cache.set( question.name, { hit: ++adDomain.hit } )
     } else {
-      global.zeroDns.http.stats.clients[ req.address.address ].generic++
+      global.dynsd.http.stats.clients[ req.address.address ].generic++
 
       promises.push(
         proxyDnsRequest( req.address.family.toLowerCase(), question, res )
@@ -101,7 +101,7 @@ export default () => {
                 console.log( `>> DNS: Listening on [::]:53/tcp` )
                 resolve()
               })
-              .serve( global.zeroDns.dns.port )
+              .serve( global.dynsd.dns.port )
           }
         )
       }
@@ -117,7 +117,7 @@ export default () => {
                 console.log( `>> DNS: Listening on 0.0.0.0:53/udp` )
                 resolve()
               })
-              .serve( global.zeroDns.dns.port )
+              .serve( global.dynsd.dns.port )
           }
         )
       }
@@ -133,7 +133,7 @@ export default () => {
                 console.log( `>> DNS: Listening on [::]:53/udp` )
                 resolve()
               })
-              .serve( global.zeroDns.dns.port )
+              .serve( global.dynsd.dns.port )
           }
         )
       }

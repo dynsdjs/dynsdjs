@@ -1,14 +1,14 @@
 {
-  "name": "zeroads",
+  "name": "dynsdjs",
   "version": "0.2.0",
-  "description": "DNS Server + REST API + Web Client all bundled in a single Node.js application",
+  "description": "Dead-simple DNS Server Daemon written in NodeJS",
   "author": "Julian Xhokaxhiu",
   "license": "MIT",
-  "homepage": "https://github.com/julianxhokaxhiu/zeroads#readme",
+  "homepage": "https://github.com/julianxhokaxhiu/dynsdjs#readme",
   "bugs": {
-    "url": "https://github.com/julianxhokaxhiu/zeroads/issues"
+    "url": "https://github.com/julianxhokaxhiu/dynsdjs/issues"
   },
-  "main": "dist/ZeroAds.js",
+  "main": "dist/Dynsd.js",
   "scripts": {
     "build:dev": "webpack",
     "build:watch": "webpack --watch",
@@ -17,11 +17,11 @@
     "test": "HTTPPORT=8080 DNSPORT=5353 node ./bin/cli.js"
   },
   "bin": {
-    "zeroads": "./bin/cli.js"
+    "dynsd": "./bin/cli.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/julianxhokaxhiu/zeroads.git"
+    "url": "git+https://github.com/julianxhokaxhiu/dynsdjs.git"
   },
   "keywords": [
     "adblock",

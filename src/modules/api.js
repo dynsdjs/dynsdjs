@@ -6,17 +6,17 @@ export default () => {
   server.get(
     '/api',
     ( req, res, next ) => {
-      global.zeroDns.dns.cache.keys(
+      global.dynsd.dns.cache.keys(
         ( err, keys ) => {
           // Set it globally
-          global.zeroDns.http.stats.totalEntries = keys.length
+          global.dynsd.http.stats.totalEntries = keys.length
 
           // Start the local response logic
-          let ret = Object.assign( {}, global.zeroDns.http.stats )
+          let ret = Object.assign( {}, global.dynsd.http.stats )
 
           keys.forEach(
             ( key ) => {
-              let o = global.zeroDns.dns.cache.get( key )
+              let o = global.dynsd.dns.cache.get( key )
               ret.totalHits += o.hit
             }
           )
@@ -32,7 +32,7 @@ export default () => {
     ( resolve, reject ) => {
       server
         .on( 'error', e => reject( e.message ) )
-        .listen( global.zeroDns.http.port, () => {
+        .listen( global.dynsd.http.port, () => {
           console.log( `>> HTTP Port listening on: ${server.url}` )
           resolve()
         })

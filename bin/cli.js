@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-const zeroAds = require('../dist/ZeroAds');
+const dynsd = require('../dist/Dynsd');
 
-zeroAds.default();
+dynsd.default();
