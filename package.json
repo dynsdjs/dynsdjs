@@ -1,6 +1,6 @@
 {
   "name": "dynsdjs",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "Dead-simple DNS Server Daemon written in NodeJS",
   "author": "Julian Xhokaxhiu",
   "license": "MIT",
