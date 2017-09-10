@@ -50,10 +50,8 @@ function start( entries ) {
     )
 
   server
-    .on( 'error', e => reject( e.message ) )
-    .listen( port, () => {
-      console.log( `>> HTTP Port listening on: ${server.url}` )
-    })
+    .on( 'error', e => console.log( `>> HTTP: ERROR: ${e.message}` ) )
+    .listen( port, () => console.log( `>> HTTP: Server listening on ${server.url}` ) )
 }
 
 export default class {
