@@ -99,7 +99,7 @@ function recurse( me, question, req, res ) {
   )
 }
 
-export default class Dns extends EventEmitter {
+export default class extends EventEmitter {
   constructor() {
     // Inherit EventEmitter methods
     super()
