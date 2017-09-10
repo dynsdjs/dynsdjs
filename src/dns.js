@@ -25,6 +25,29 @@ const port = process.env.DNSPORT || 53,
       udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),
       udp6Server = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } )
 
+function emitAsPromise( resolve, reject, me, eventName, data ) {
+  const listeners = me.listeners( eventName ),
+        promises = []
+
+  listeners
+    .forEach(
+      listener => {
+        promises.push(
+          new Promise (
+            ( resolve, reject ) => {
+              return listener( resolve, reject, data )
+            }
+          )
+        )
+      }
+    )
+
+  Promise
+    .all( promises )
+    .catch( err => reject( err ) )
+    .then( () => resolve() )
+}
+
 function request( me, req, res ) {
   const promises = []
 
@@ -62,12 +85,36 @@ function request( me, req, res ) {
 
   Promise
     .all( promises )
-    .then( () => {
-      if ( promises.length )
-        me.emit( 'resolve.external', req, res.answer )
-      else
-        me.emit( 'resolve.internal', req, res.answer )
-    })
+    .then(
+      () => {
+        return new Promise(
+          ( resolve, reject ) => {
+            if ( promises.length )
+              emitAsPromise(
+                resolve,
+                reject,
+                me,
+                'resolve.external',
+                {
+                  req,
+                  res
+                }
+              )
+            else
+              emitAsPromise(
+                resolve,
+                reject,
+                me,
+                'resolve.internal',
+                {
+                  req,
+                  res
+                }
+              )
+          }
+        )
+      }
+    )
     .then( () => res.send() )
     .catch( err => console.log( err ) )
 }
@@ -90,7 +137,7 @@ function recurse( me, question, req, res ) {
         })
         .on( 'timeout', () => reject( `>> DNS: Recursive question '${question.name}' went in timeout with resolver '${resolver}:53'` ) )
         .on( 'message',
-          (err, msg) => {
+          ( err, msg ) => {
             msg.answer
               .forEach( answer => res.answer.push( answer ) )
           }
@@ -161,7 +208,22 @@ export default class extends EventEmitter {
         }
       )
       .then(
-        () => me.emit( 'init', entries )
+        () => {
+          return new Promise(
+            ( resolve, reject ) => {
+              emitAsPromise(
+                resolve,
+                reject,
+                me,
+                'init',
+                {
+                  entries
+                }
+              )
+            }
+          )
+        }
       )
+      .catch( err => console.log( err ) )
   }
 }
