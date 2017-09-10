@@ -1,58 +1,133 @@
 import dns from 'native-dns'
-import fetch from 'node-fetch'
-import fs from 'fs'
 import ip from 'ip'
+import NodeCache from 'node-cache'
+import EventEmitter from 'events'
 
-class DnsHandler {
-  constructor( config ) {
-    this.config = config
+export default class Dns extends EventEmitter {
+  constructor() {
+    // Inherit EventEmitter methods
+    super()
+
+    // Configurations
+    this._port = process.env.DNSPORT || 53
+
+    this._resolvers = {
+      ipv4: [
+        process.env.DNSALT1 || '8.8.8.8',
+        process.env.DNSALT2 || '8.8.4.4'
+      ],
+      ipv6: [
+        process.env.DNS6ALT1 || '2001:4860:4860::8888',
+        process.env.DNS6ALT1 || '2001:4860:4860::8844'
+      ]
+    }
+
+    this._entries = new NodeCache({
+      // From <https://www.npmjs.com/package/node-cache>
+      // "You should set false if you want to save mutable objects or other complex types with mutability involved and wanted."
+      useClones: false
+    })
+
+    // Server Handlers
+    this._tcpServer  = dns.createTCPServer()
+    this._udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } )
+    this._udp6Server = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } )
   }
 
-  request( req, res ) {
+  start() {
+    const me = this
+
+    Promise
+      .resolve()
+      .then(
+        () => {
+          return new Promise (
+            ( resolve, reject ) => {
+              me._tcpServer
+                .on( 'socketError', ( e ) => reject( `[DNS] TCP: ${e.message}` ) )
+                .on( 'request', ( req, res ) => me._request( req, res ) )
+                .on( 'listening', () => {
+                  console.log( `>> DNS: Listening on [::]:53/tcp` )
+                  resolve()
+                })
+                .serve( me._port )
+            }
+          )
+        }
+      )
+      .then(
+        () => {
+          return new Promise (
+            ( resolve, reject ) => {
+              me._udp4Server
+                .on( 'socketError', ( e ) => reject( `[DNS] UDP4: ${e.message}` ) )
+                .on( 'request', ( req, res ) => me._request( req, res ) )
+                .on( 'listening', () => {
+                  console.log( `>> DNS: Listening on 0.0.0.0:53/udp` )
+                  resolve()
+                })
+                .serve( me._port )
+            }
+          )
+        }
+      )
+      .then(
+        () => {
+          return new Promise (
+            ( resolve, reject ) => {
+              me._udp6Server
+                .on( 'socketError', ( e ) => reject( `[DNS] UDP6: ${e.message}` ) )
+                .on( 'request', ( req, res ) => me._request( req, res ) )
+                .on( 'listening', () => {
+                  console.log( `>> DNS: Listening on [::]:53/udp` )
+                  resolve()
+                })
+                .serve( me._port )
+            }
+          )
+        }
+      )
+      .then(
+        () => this.emit( 'init', this._entries )
+      )
+  }
+
+  _request( req, res ) {
     const me = this,
           promises = []
 
-    me.res = res
-
-    if ( !( req.address.address in me.config.http.stats.clients ) ) {
-      me.config.http.stats.clients[ req.address.address ] = {
-        'ads': 0,
-        'generic': 0
-      }
-    }
-
     req.question.forEach( function ( question ) {
-      const adDomain = me.config.dns.cache.get( question.name )
+      const entry = me._entries.get( question.name )
 
-      if ( adDomain ) {
-        res
-          .answer
-          .push(
-            dns.A({
-              name: question.name,
-              address: ip.address( 'private', 'ipv4' ),
-              ttl: 600
-            })
-          )
+      if ( entry ) {
+        me.emit( 'resolve.internal', question, req, res )
 
-        res
-          .answer
-          .push(
-            dns.AAAA({
-              name: question.name,
-              address: ip.address( 'private', 'ipv6' ),
-              ttl: 600
-            })
-          )
+        if ( entry.address )
+          res
+            .answer
+            .push(
+              dns.A({
+                name: entry.name || question.name,
+                address: entry.address || ip.address( 'private', 'ipv4' ),
+                ttl: entry.ttl || 600
+              })
+            )
 
-        me.config.http.stats.clients[ req.address.address ].ads++
-
-        me.config.dns.cache.set( question.name, { hit: ++adDomain.hit } )
+        if ( entry.address6 )
+          res
+            .answer
+            .push(
+              dns.AAAA({
+                name: entry.name || question.name,
+                address: entry.address6 || ip.address( 'private', 'ipv6' ),
+                ttl: entry.ttl || 600
+              })
+            )
       } else {
-        me.config.http.stats.clients[ req.address.address ].generic++
+        me.emit( 'resolve.external', question, req, res )
 
         promises.push(
-          me._recurse( req.address.family.toLowerCase(), question )
+          me._recurse( question, req, res )
         )
       }
     })
@@ -63,9 +138,10 @@ class DnsHandler {
       .catch( err => console.log( err ) )
   }
 
-  _recurse( ip, question ) {
+  _recurse( question, req, res ) {
     const me = this,
-          resolver = me.config.dns.resolver[ ip ][ Math.round( Math.random() ) ]
+          ipFamily = req.address.family.toLowerCase(),
+          resolver = me._resolvers[ ipFamily ][ Math.round( Math.random() ) ]
 
     return new Promise(
       ( resolve, reject ) => {
@@ -83,7 +159,7 @@ class DnsHandler {
           .on( 'message',
             (err, msg) => {
               msg.answer
-                .forEach( answer => me.res.answer.push( answer ) )
+                .forEach( answer => res.answer.push( answer ) )
             }
           )
           .on( 'end', resolve )
@@ -91,69 +167,4 @@ class DnsHandler {
       }
     )
   }
-}
-
-export default ( config ) => {
-  const udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),
-        udp6Server = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } ),
-        tcpServer  = dns.createTCPServer(),
-        dnsHandler = new DnsHandler( config )
-
-  return new Promise (
-    ( resolve, reject ) => {
-      Promise
-        .resolve()
-        .then(
-          () => {
-            return new Promise (
-              ( resolve, reject ) => {
-                tcpServer
-                  .on( 'socketError', ( e ) => reject( `[DNS] TCP: ${e.message}` ) )
-                  .on( 'request', ( req, res ) => dnsHandler.request( req, res ) )
-                  .on( 'listening', () => {
-                    console.log( `>> DNS: Listening on [::]:53/tcp` )
-                    resolve()
-                  })
-                  .serve( config.dns.port )
-              }
-            )
-          }
-        )
-        .then(
-          () => {
-            return new Promise (
-              ( resolve, reject ) => {
-                udp4Server
-                  .on( 'socketError', ( e ) => reject( `[DNS] UDP4: ${e.message}` ) )
-                  .on( 'request', ( req, res ) => dnsHandler.request( req, res ) )
-                  .on( 'listening', () => {
-                    console.log( `>> DNS: Listening on 0.0.0.0:53/udp` )
-                    resolve()
-                  })
-                  .serve( config.dns.port )
-              }
-            )
-          }
-        )
-        .then(
-          () => {
-            return new Promise (
-              ( resolve, reject ) => {
-                udp6Server
-                  .on( 'socketError', ( e ) => reject( `[DNS] UDP6: ${e.message}` ) )
-                  .on( 'request', ( req, res ) => dnsHandler.request( req, res ) )
-                  .on( 'listening', () => {
-                    console.log( `>> DNS: Listening on [::]:53/udp` )
-                    resolve()
-                  })
-                  .serve( config.dns.port )
-              }
-            )
-          }
-        )
-        .then(
-          () => resolve( config )
-        )
-    }
-  )
 }
