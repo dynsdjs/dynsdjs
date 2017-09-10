@@ -32,8 +32,6 @@ function request( me, req, res ) {
     const entry = entries.get( question.name )
 
     if ( entry ) {
-      me.emit( 'resolve.internal', question, req, res )
-
       if ( entry.address )
         res
           .answer
@@ -56,8 +54,6 @@ function request( me, req, res ) {
             })
           )
     } else {
-      me.emit( 'resolve.external', question, req, res )
-
       promises.push(
         recurse( me, question, req, res )
       )
@@ -66,6 +62,12 @@ function request( me, req, res ) {
 
   Promise
     .all( promises )
+    .then( () => {
+      if ( promises.length )
+        me.emit( 'resolve.external', req, res.answer )
+      else
+        me.emit( 'resolve.internal', req, res.answer )
+    })
     .then( () => res.send() )
     .catch( err => console.log( err ) )
 }
