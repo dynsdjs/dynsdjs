@@ -1,9 +1,9 @@
 import NodeCache from 'node-cache'
 
-export default function Config () {
+export default () => {
   return new Promise(
     ( resolve, reject ) => {
-      global.dynsd = {
+      const config = {
         dns: {
           cache: new NodeCache({ useClones: false }),
           port: process.env.DNSPORT || 53,
@@ -28,7 +28,7 @@ export default function Config () {
         }
       }
 
-      resolve()
+      resolve( config )
     }
   )
 }

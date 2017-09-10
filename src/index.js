@@ -9,10 +9,10 @@ export default () => {
       () => Config()
     )
     .then(
-      () => Dns()
+      ( config ) => Dns( config )
     )
     .then(
-      () => Api()
+      ( config ) => Api( config )
     )
     .catch( err => console.log( `ERROR: ${err}` ) )
 }

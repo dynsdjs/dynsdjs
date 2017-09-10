@@ -3,8 +3,10 @@ import fetch from 'node-fetch'
 import fs from 'fs'
 import ip from 'ip'
 
+let dnsConfig
+
 function proxyDnsRequest ( ipType, question, response ) {
-  const resolver = global.dynsd.dns.resolver[ ipType ][ Math.round( Math.random() ) ]
+  const resolver = dnsConfig.dns.resolver[ ipType ][ Math.round( Math.random() ) ]
 
   return new Promise(
     ( resolve, reject ) => {
@@ -34,15 +36,15 @@ function proxyDnsRequest ( ipType, question, response ) {
 function answerDnsRequest ( req, res ) {
   let promises = []
 
-  if ( !( req.address.address in global.dynsd.http.stats.clients ) ) {
-    global.dynsd.http.stats.clients[ req.address.address ] = {
+  if ( !( req.address.address in dnsConfig.http.stats.clients ) ) {
+    dnsConfig.http.stats.clients[ req.address.address ] = {
       'ads': 0,
       'generic': 0
     }
   }
 
   req.question.forEach( function ( question ) {
-    const adDomain = global.dynsd.dns.cache.get( question.name )
+    const adDomain = dnsConfig.dns.cache.get( question.name )
 
     if ( adDomain ) {
       res
@@ -65,11 +67,11 @@ function answerDnsRequest ( req, res ) {
           })
         )
 
-      global.dynsd.http.stats.clients[ req.address.address ].ads++
+      dnsConfig.http.stats.clients[ req.address.address ].ads++
 
-      global.dynsd.dns.cache.set( question.name, { hit: ++adDomain.hit } )
+      dnsConfig.dns.cache.set( question.name, { hit: ++adDomain.hit } )
     } else {
-      global.dynsd.http.stats.clients[ req.address.address ].generic++
+      dnsConfig.http.stats.clients[ req.address.address ].generic++
 
       promises.push(
         proxyDnsRequest( req.address.family.toLowerCase(), question, res )
@@ -83,59 +85,68 @@ function answerDnsRequest ( req, res ) {
     .catch( err => console.log( err ) )
 }
 
-export default () => {
+export default ( config ) => {
   const udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),
         udp6Server = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } ),
         tcpServer  = dns.createTCPServer()
 
-  return Promise
-    .resolve()
-    .then(
-      () => {
-        return new Promise (
-          ( resolve, reject ) => {
-            tcpServer
-              .on( 'socketError', ( e ) => reject( `[DNS] TCP: ${e.message}` ) )
-              .on( 'request', answerDnsRequest )
-              .on( 'listening', () => {
-                console.log( `>> DNS: Listening on [::]:53/tcp` )
-                resolve()
-              })
-              .serve( global.dynsd.dns.port )
+  dnsConfig = config
+
+  return new Promise (
+    ( resolve, reject ) => {
+      Promise
+        .resolve()
+        .then(
+          () => {
+            return new Promise (
+              ( resolve, reject ) => {
+                tcpServer
+                  .on( 'socketError', ( e ) => reject( `[DNS] TCP: ${e.message}` ) )
+                  .on( 'request', answerDnsRequest )
+                  .on( 'listening', () => {
+                    console.log( `>> DNS: Listening on [::]:53/tcp` )
+                    resolve()
+                  })
+                  .serve( dnsConfig.dns.port )
+              }
+            )
           }
         )
-      }
-    )
-    .then(
-      () => {
-        return new Promise (
-          ( resolve, reject ) => {
-            udp4Server
-              .on( 'socketError', ( e ) => reject( `[DNS] UDP4: ${e.message}` ) )
-              .on( 'request', answerDnsRequest )
-              .on( 'listening', () => {
-                console.log( `>> DNS: Listening on 0.0.0.0:53/udp` )
-                resolve()
-              })
-              .serve( global.dynsd.dns.port )
+        .then(
+          () => {
+            return new Promise (
+              ( resolve, reject ) => {
+                udp4Server
+                  .on( 'socketError', ( e ) => reject( `[DNS] UDP4: ${e.message}` ) )
+                  .on( 'request', answerDnsRequest )
+                  .on( 'listening', () => {
+                    console.log( `>> DNS: Listening on 0.0.0.0:53/udp` )
+                    resolve()
+                  })
+                  .serve( dnsConfig.dns.port )
+              }
+            )
           }
         )
-      }
-    )
-    .then(
-      () => {
-        return new Promise (
-          ( resolve, reject ) => {
-            udp6Server
-              .on( 'socketError', ( e ) => reject( `[DNS] UDP6: ${e.message}` ) )
-              .on( 'request', answerDnsRequest )
-              .on( 'listening', () => {
-                console.log( `>> DNS: Listening on [::]:53/udp` )
-                resolve()
-              })
-              .serve( global.dynsd.dns.port )
+        .then(
+          () => {
+            return new Promise (
+              ( resolve, reject ) => {
+                udp6Server
+                  .on( 'socketError', ( e ) => reject( `[DNS] UDP6: ${e.message}` ) )
+                  .on( 'request', answerDnsRequest )
+                  .on( 'listening', () => {
+                    console.log( `>> DNS: Listening on [::]:53/udp` )
+                    resolve()
+                  })
+                  .serve( dnsConfig.dns.port )
+              }
+            )
           }
         )
-      }
-    )
+        .then(
+          () => resolve( config )
+        )
+    }
+  )
 }
