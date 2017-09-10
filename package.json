@@ -34,7 +34,6 @@
     "native-dns": "~0.7.0",
     "node-cache": "~4.1.1",
     "node-fetch": "^1.7.2",
-    "npm-check-updates": "^2.12.1",
     "restify": "^5.2.0",
     "webpack": "^3.3.0"
   }
