@@ -2,36 +2,6 @@ import dns from 'native-dns'
 import fetch from 'node-fetch'
 import fs from 'fs'
 import ip from 'ip'
-//import readline from 'readline'
-
-/*function parseHostsRecords ( url, cb ) {
-  fetch( url )
-    .then( res => {})
-    .then( body => {
-      if ( body ) {
-        body
-          .split('\n')
-          .forEach(
-            ( line ) => {
-              if ( !line.startsWith( '#' ) ) {
-                var host = line.split( /\s+/ ),
-                    domain = ''
-
-                if ( host.length < 2 )
-                  domain = host[0]
-                else
-                  domain = host[1]
-
-                global.zeroDns.dns.cache
-                .set( domain, { hit: 0 } )
-              }
-            }
-          )
-          cb()
-      }
-    })
-}
-*/
 
 function proxyDnsRequest ( ipType, question, response ) {
   const resolver = global.zeroDns.dns.resolver[ ipType ][ Math.round( Math.random() ) ]
@@ -117,34 +87,9 @@ export default () => {
   const udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),
         udp6Server = dns.createServer( { dgram_type: { type: 'udp6', reuseAddr: true } } ),
         tcpServer  = dns.createTCPServer()
-      /*urls = [],
-      lineReader = readline.createInterface({
-        input: fs.createReadStream('ads.list')
-      })*/
 
   return Promise
     .resolve()
-    .then(
-      () => {
-        return Promise.resolve()
-        /*return new Promise (
-          ( resolve, reject ) => {
-            lineReader
-              .on( 'line', function (line) {
-                if ( line.startsWith( 'http' ) ) urls.push( line )
-              })
-              .on( 'close', function (){
-                async.map( urls, parseHostsRecords, function ( err ) {
-                  if ( err )
-                    reject( err )
-                  else
-                    resolve()
-                })
-              })
-          }
-        )*/
-      }
-    )
     .then(
       () => {
         return new Promise (
