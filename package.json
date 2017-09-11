@@ -4,9 +4,9 @@
   "description": "Dead-simple DNS Server Daemon written in NodeJS",
   "author": "Julian Xhokaxhiu",
   "license": "MIT",
-  "homepage": "https://github.com/julianxhokaxhiu/dynsdjs#readme",
+  "homepage": "https://github.com/dynsdjs/dynsdjs#readme",
   "bugs": {
-    "url": "https://github.com/julianxhokaxhiu/dynsdjs/issues"
+    "url": "https://github.com/dynsdjs/dynsdjs/issues"
   },
   "main": "dist/Dynsd.js",
   "scripts": {
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/julianxhokaxhiu/dynsdjs.git"
+    "url": "git+https://github.com/dynsdjs/dynsdjs.git"
   },
   "keywords": [
     "dns"
