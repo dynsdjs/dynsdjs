@@ -6,21 +6,22 @@ Dead-simple DNS Server Daemon written in NodeJS
 - A full plugin logic to extend the DNS with custom functionality ( see below for more details )
 
 # Installation
-The Git way:
+
+You can install `dynsdjs` by simply running:
+
+```shell
+$ npm install -g dynsdjs
+$ dynsd # sudo is required to bind port 80 and 53
+```
+
+# Development
+
 ```bash
 $ git clone https://github.com/julianxhokaxhiu/dynsdjs.git
 $ cd dynsdjs
 $ npm install
-$ npm run start # sudo is required to bind port 80 and 53
-```
-
-The Zip way:
-```bash
-$ wget https://github.com/julianxhokaxhiu/dynsdjs/archive/master.zip
-$ unzip master.zip
-$ cd dynsdjs-master
-$ npm install
-$ npm run start # sudo is required to bind port 80 and 53
+$ npm link
+$ dynsd # sudo is required to bind port 80 and 53
 ```
 
 # Options
@@ -40,7 +41,7 @@ See also [package.json](package.json#L17) as a real world example.
 You can extend this Daemon by creating a package that has a name that starts with `dynsdjs-plugin` prefix. In order to use it, it's just required to install it in the current `dynsdjs` folder. For eg.:
 
 ```
-$ npm install dynsdjs-plugin-api
+$ npm install -g dynsdjs-plugin-api
 ```
 
 The plugin at this point will be run automatically on the next restart of the daemon
