@@ -1,5 +1,4 @@
 import dns from 'native-dns'
-import ip from 'ip'
 import NodeCache from 'node-cache'
 import EventEmitter from 'events'
 
@@ -61,7 +60,7 @@ function request( me, req, res ) {
           .push(
             dns.A({
               name: entry.name || question.name,
-              address: entry.address || ip.address( 'private', 'ipv4' ),
+              address: entry.address,
               ttl: entry.ttl || 600
             })
           )
@@ -72,7 +71,7 @@ function request( me, req, res ) {
           .push(
             dns.AAAA({
               name: entry.name || question.name,
-              address: entry.address6 || ip.address( 'private', 'ipv6' ),
+              address: entry.address6,
               ttl: entry.ttl || 600
             })
           )
