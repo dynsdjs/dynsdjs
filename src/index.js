@@ -68,7 +68,7 @@ export default () => {
   Promise.resolve()
     .catch( err => console.log( err ) )
     // Load global plugins
-    .then( () => getNodeModulesPath( true ) )
+    .then( () => getNodeModulesPath( /*isGlobal:*/ true ) )
     .then( path => loadPlugins( path ) )
     // Load local plugins
     .then( () => getNodeModulesPath() )
