@@ -5,6 +5,7 @@ import Dns from './dns'
 import { name as packageName } from '../package.json'
 
 const dns = new Dns()
+let plugins = []
 
 function getNodeModulesPath( isGlobal ) {
   return new Promise (
@@ -42,10 +43,14 @@ function loadPlugins( pluginPath ) {
 
                     const instance = eval('require')( plugin )
 
-                    if ( instance && instance.default )
-                      new instance.default( dns )
-                    else if ( instance ) {
-                      new instance( dns )
+                    // Avoid loading twice a plugin, if it's already loaded
+                    if ( instance && !(plugin in plugins) ) {
+                      plugins[ plugin ] = true
+
+                      if ( instance.default )
+                        new instance.default( dns )
+                      else if ( instance )
+                        new instance( dns )
                     }
                   }
                 )
