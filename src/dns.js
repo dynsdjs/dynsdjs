@@ -167,7 +167,7 @@ export default class extends EventEmitter {
                 .on( 'socketError', ( e ) => reject( `[DNS] TCP: ${e.message}` ) )
                 .on( 'request', ( req, res ) => request( me, req, res ) )
                 .on( 'listening', () => {
-                  console.log( `>> DNS: Listening on [::]:53/tcp` )
+                  console.log( `[DNS] Listening on [::]:53/tcp` )
                   resolve()
                 })
                 .serve( port )
@@ -183,7 +183,7 @@ export default class extends EventEmitter {
                 .on( 'socketError', ( e ) => reject( `[DNS] UDP4: ${e.message}` ) )
                 .on( 'request', ( req, res ) => request( me, req, res ) )
                 .on( 'listening', () => {
-                  console.log( `>> DNS: Listening on 0.0.0.0:53/udp` )
+                  console.log( `[DNS] Listening on 0.0.0.0:53/udp` )
                   resolve()
                 })
                 .serve( port )
@@ -199,7 +199,7 @@ export default class extends EventEmitter {
                 .on( 'socketError', ( e ) => reject( `[DNS] UDP6: ${e.message}` ) )
                 .on( 'request', ( req, res ) => request( me, req, res ) )
                 .on( 'listening', () => {
-                  console.log( `>> DNS: Listening on [::]:53/udp` )
+                  console.log( `[DNS] Listening on [::]:53/udp` )
                   resolve()
                 })
                 .serve( port )
