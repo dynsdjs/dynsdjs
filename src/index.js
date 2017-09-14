@@ -16,12 +16,12 @@ function getNodeModulesPath( isGlobal ) {
           ( err, stdout, stderr ) => {
             if ( err ) reject( err )
             else if ( stderr ) reject ( stderr )
-            else resolve( stdout )
+            else resolve( stdout.replace('\n','') )
           }
         )
       else
         resolve(
-          `${path.resolve()}/node_modules`
+          `${path.resolve()}`
         )
     }
   )
@@ -32,19 +32,21 @@ function loadPlugins( pluginPath ) {
     ( resolve, reject ) => {
       // Load Plugins
       glob(
-        `${pluginPath}/${packageName}-plugin-*`,
+        `${pluginPath}/**/${packageName}-plugin-*`,
         ( err, files ) => {
             if ( err ) reject( err )
             else {
               files
                 .forEach(
                   ( plugin ) => {
-                    plugin = path.basename( plugin )
-
                     const instance = eval('require')( plugin )
+
+                    plugin = path.basename( plugin )
 
                     // Avoid loading twice a plugin, if it's already loaded
                     if ( instance && !(plugin in plugins) ) {
+                      console.log( `[CORE] Loading plugin '${plugin}'...` )
+
                       plugins[ plugin ] = true
 
                       if ( instance.default )
