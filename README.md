@@ -28,11 +28,19 @@ $ dynsd # sudo is required to bind port 80 and 53
 You can configure `dynsdjs` through Environment variables
 
 - `DNSPORT` for the DNS service ( default is `53` )
+- `DNSRESOURCES` to define a list of supported resources. Must be a string separated by comma.
+  Default: `A,AAAA,NS,CNAME,PTR,NAPTR,TXT,MX,SRV,SOA,TLSA`
+
+## DNS Resources
+
+The parameter `DNSRESOURCES` will help you to either restrict or extend the functionalities of the DNS Server. Either because of security reasons or whatever. This functionality will be a heavy whitelist, when resolving an internal domain present in the list ( injected through the `init` event ).
+
+So, if you for eg. set `DNSRESOURCES='A,AAAA'` ( like in the example down here ), this means that even if the plugins will return an extended entry with other resource records ( like MX, NS, etc. ) your DNS will answer only with A and AAAA records.
 
 ## Example
 
 ```bash
-$ DNSPORT=5353 dynsd
+$ DNSPORT=5353 DNSRESOURCES='A,AAAA' dynsd
 ```
 See also [package.json](package.json#L17) as a real world example.
 
@@ -76,6 +84,30 @@ The `init` event is emitted as soon as the DNS daemon starts. The event gives tr
 - **resolve:** a promise function that must be called if everything on the plugin side went well.
 - **reject:** a promise function that must be called if something went wrong.
 - **data.entries:** this object will hold the current entries present in the daemon. You can extend/manipulate it, as long as you prefer. This object is an instance of [node-cache](https://www.npmjs.com/package/node-cache), therefore see its API for more informations.
+
+##### data.entries structure
+
+The structure of every entry must be Dictionary where:
+
+- **key** must be a resource type ( eg. `A`,`AAAA`,etc. )
+- **value** a valid Dictionary, composed of the keys explained in [native-dns ResourceRecord](https://github.com/tjfontaine/node-dns#resourcerecord) documentation
+
+This is an example of valid structure:
+
+```json
+{
+  A: {
+    name: 'awesomedomain.local',
+    address: '0.0.0.0',
+    ttl: 600
+  },
+  AAAA: {
+    name: 'awesomedomain.local',
+    address: '::',
+    ttl: 600
+  }
+}
+```
 
 #### resolve.internal ( resolve, reject, data )
 
