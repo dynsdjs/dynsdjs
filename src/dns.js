@@ -31,6 +31,8 @@ function emitAsPromise( resolve, reject, me, eventName, data ) {
   const listeners = me.listeners( eventName ),
         promises = []
 
+  console.log( `[${chalk.blue('CORE')}] Dispatching '${chalk.green(eventName)}' event. Waiting for plugins to complete...` )
+
   listeners
     .forEach(
       listener => {
@@ -43,8 +45,6 @@ function emitAsPromise( resolve, reject, me, eventName, data ) {
         )
       }
     )
-
-  console.log( `[${chalk.blue('CORE')}] Dispatched '${chalk.green(eventName)}' event. Waiting for plugins to complete...` )
 
   Promise
     .all( promises )
@@ -64,7 +64,7 @@ function request( me, req, res ) {
           resource => {
             if ( resource in entry )
               res.answer
-                .push( dns[ resource ]( entry.resource ) )
+                .push( dns[ resource ]( entry[ resource ] ) )
           }
         )
     } else {
@@ -143,6 +143,8 @@ export default class extends EventEmitter {
   constructor() {
     // Inherit EventEmitter methods
     super()
+    // Include the chalk reference
+    this.chalk = chalk
   }
 
   start() {
@@ -175,7 +177,8 @@ export default class extends EventEmitter {
                 .on( 'socketError', ( e ) => reject( `[${chalk.blue('DNS')}] ${chalk.green('TCP')}: ${e.message}` ) )
                 .on( 'request', ( req, res ) => request( me, req, res ) )
                 .on( 'listening', () => {
-                  console.log( `[${chalk.blue('DNS')}] Listening on [::]:53/tcp` )
+                  const uri = `[::]:${port}/tcp`
+                  console.log( `[${chalk.blue('DNS')}] Listening on ${chalk.blue(uri)}` )
                   resolve()
                 })
                 .serve( port )
@@ -191,7 +194,8 @@ export default class extends EventEmitter {
                 .on( 'socketError', ( e ) => reject( `[${chalk.blue('DNS')}] ${chalk.green('UDP4')}: ${e.message}` ) )
                 .on( 'request', ( req, res ) => request( me, req, res ) )
                 .on( 'listening', () => {
-                  console.log( `[${chalk.blue('DNS')}] Listening on 0.0.0.0:53/udp` )
+                  const uri = `0.0.0.0:${port}/udp`
+                  console.log( `[${chalk.blue('DNS')}] Listening on ${chalk.blue(uri)}` )
                   resolve()
                 })
                 .serve( port )
@@ -207,7 +211,8 @@ export default class extends EventEmitter {
                 .on( 'socketError', ( e ) => reject( `[${chalk.blue('DNS')}] ${chalk.green('UDP6')}: ${e.message}` ) )
                 .on( 'request', ( req, res ) => request( me, req, res ) )
                 .on( 'listening', () => {
-                  console.log( `[${chalk.blue('DNS')}] Listening on [::]:53/udp` )
+                  const uri = `[::]:${port}/udp`
+                  console.log( `[${chalk.blue('DNS')}] Listening on ${chalk.blue(uri)}` )
                   resolve()
                 })
                 .serve( port )
