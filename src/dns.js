@@ -19,6 +19,8 @@ const port = process.env.DNSPORT || 53,
         // "You should set false if you want to save mutable objects or other complex types with mutability involved and wanted."
         useClones: false
       }),
+      // Supported resources
+      dnsResources = process.env.DNSRESOURCES ? process.env.DNSRESOURCES.split( ',' ) : 'A,AAAA,NS,CNAME,PTR,NAPTR,TXT,MX,SRV,SOA,TLSA'.split( ',' )
       // Server Handlers
       tcpServer  = dns.createTCPServer(),
       udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),
@@ -54,27 +56,14 @@ function request( me, req, res ) {
     const entry = entries.get( question.name )
 
     if ( entry ) {
-      if ( entry.address )
-        res
-          .answer
-          .push(
-            dns.A({
-              name: entry.name || question.name,
-              address: entry.address,
-              ttl: entry.ttl || 600
-            })
-          )
-
-      if ( entry.address6 )
-        res
-          .answer
-          .push(
-            dns.AAAA({
-              name: entry.name || question.name,
-              address: entry.address6,
-              ttl: entry.ttl || 600
-            })
-          )
+      dnsResources
+        .forEach(
+          resource => {
+            if ( resource in entry )
+              res.answer
+                .push( dns[ resource ]( entry.resource ) )
+          }
+        )
     } else {
       promises.push(
         recurse( me, question, req, res )
