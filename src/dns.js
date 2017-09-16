@@ -36,6 +36,7 @@ function emitAsPromise( resolve, reject, me, eventName, data ) {
         promises.push(
           new Promise (
             ( resolve, reject ) => {
+              console.log( `[CORE] Waiting for '${listener}' to finish the '${eventName}' event...` )
               return listener( resolve, reject, data )
             }
           )
@@ -149,6 +150,23 @@ export default class extends EventEmitter {
       .resolve()
       .then(
         () => {
+          return new Promise(
+            ( resolve, reject ) => {
+              emitAsPromise(
+                resolve,
+                reject,
+                me,
+                'init',
+                {
+                  entries
+                }
+              )
+            }
+          )
+        }
+      )
+      .then(
+        () => {
           return new Promise (
             ( resolve, reject ) => {
               tcpServer
@@ -191,23 +209,6 @@ export default class extends EventEmitter {
                   resolve()
                 })
                 .serve( port )
-            }
-          )
-        }
-      )
-      .then(
-        () => {
-          return new Promise(
-            ( resolve, reject ) => {
-              emitAsPromise(
-                resolve,
-                reject,
-                me,
-                'init',
-                {
-                  entries
-                }
-              )
             }
           )
         }
