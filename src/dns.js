@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import dns from 'native-dns'
 import NodeCache from 'node-cache'
 import EventEmitter from 'events'
@@ -43,7 +44,7 @@ function emitAsPromise( resolve, reject, me, eventName, data ) {
       }
     )
 
-  console.log( `[CORE] Dispatched '${eventName}' event. Waiting for plugins to complete...` )
+  console.log( `[${chalk.blue('CORE')}] Dispatched '${chalk.green(eventName)}' event. Waiting for plugins to complete...` )
 
   Promise
     .all( promises )
@@ -106,7 +107,7 @@ function request( me, req, res ) {
       }
     )
     .then( () => res.send() )
-    .catch( err => console.log( err ) )
+    .catch( err => console.error( err ) )
 }
 
 function recurse( me, question, req, res ) {
@@ -171,10 +172,10 @@ export default class extends EventEmitter {
           return new Promise (
             ( resolve, reject ) => {
               tcpServer
-                .on( 'socketError', ( e ) => reject( `[DNS] TCP: ${e.message}` ) )
+                .on( 'socketError', ( e ) => reject( `[${chalk.blue('DNS')}] ${chalk.green('TCP')}: ${e.message}` ) )
                 .on( 'request', ( req, res ) => request( me, req, res ) )
                 .on( 'listening', () => {
-                  console.log( `[DNS] Listening on [::]:53/tcp` )
+                  console.log( `[${chalk.blue('DNS')}] Listening on [::]:53/tcp` )
                   resolve()
                 })
                 .serve( port )
@@ -187,10 +188,10 @@ export default class extends EventEmitter {
           return new Promise (
             ( resolve, reject ) => {
               udp4Server
-                .on( 'socketError', ( e ) => reject( `[DNS] UDP4: ${e.message}` ) )
+                .on( 'socketError', ( e ) => reject( `[${chalk.blue('DNS')}] ${chalk.green('UDP4')}: ${e.message}` ) )
                 .on( 'request', ( req, res ) => request( me, req, res ) )
                 .on( 'listening', () => {
-                  console.log( `[DNS] Listening on 0.0.0.0:53/udp` )
+                  console.log( `[${chalk.blue('DNS')}] Listening on 0.0.0.0:53/udp` )
                   resolve()
                 })
                 .serve( port )
@@ -203,10 +204,10 @@ export default class extends EventEmitter {
           return new Promise (
             ( resolve, reject ) => {
               udp6Server
-                .on( 'socketError', ( e ) => reject( `[DNS] UDP6: ${e.message}` ) )
+                .on( 'socketError', ( e ) => reject( `[${chalk.blue('DNS')}] ${chalk.green('UDP6')}: ${e.message}` ) )
                 .on( 'request', ( req, res ) => request( me, req, res ) )
                 .on( 'listening', () => {
-                  console.log( `[DNS] Listening on [::]:53/udp` )
+                  console.log( `[${chalk.blue('DNS')}] Listening on [::]:53/udp` )
                   resolve()
                 })
                 .serve( port )
@@ -214,6 +215,6 @@ export default class extends EventEmitter {
           )
         }
       )
-      .catch( err => console.log( err ) )
+      .catch( err => console.error( err ) )
   }
 }

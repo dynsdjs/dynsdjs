@@ -1,11 +1,88 @@
 import { exec } from 'child_process'
 import glob from 'glob'
 import path from 'path'
+import process from 'process'
+import chalk from 'chalk'
+import winston from 'winston'
 import Dns from './dns'
 import { name as packageName } from '../package.json'
 
 const dns = new Dns()
 let plugins = []
+
+function overrideConsole() {
+  const timestamp = () => {
+    const now = new Date(),
+          hours = `${( now.getHours() < 10 ? '0' : '' )}${now.getHours()}`,
+          minutes = `${( now.getMinutes() < 10 ? '0' : '' )}${now.getMinutes()}`,
+          seconds = `${( now.getSeconds() < 10 ? '0' : '' )}${now.getSeconds()}`
+
+    return chalk.grey( `${hours}:${minutes}:${seconds}` )
+  }
+
+  const formatter = options => {
+    const timestamp = options.timestamp(),
+          level = colorize( options.level ),
+          message = options.message || '',
+          meta = ( options.meta && Object.keys( options.meta ).length ? '\n\t'+ JSON.stringify( options.meta ) : '' )
+
+    // Return string will be passed to logger.
+    return `[${timestamp}] ${level}: ${message}${meta}`
+  }
+
+  const colorize = level => {
+    let ret
+
+    switch ( winston.config.syslog.levels[level] ) {
+      case 0:
+      case 1:
+      case 2:
+      case 3:
+        ret = chalk.red( level.toUpperCase() )
+        break
+      case 4:
+        ret = chalk.yellow( level.toUpperCase() )
+        break
+      case 5:
+      case 6:
+        ret = chalk.blue( level.toUpperCase() )
+        break
+      case 7:
+        ret = chalk.gray( level.toUpperCase() )
+        break
+    }
+
+    return ret
+  }
+
+  // Configure the log output
+  const logger = new winston
+    .Logger({
+      transports: [
+        new (winston.transports.Console)({
+          prettyPrint: true,
+          timestamp: timestamp,
+          formatter: formatter
+        })
+      ]
+    })
+    .on( 'logging', (transport, level) => {
+      // Terminate the process if an error is logged
+      if ( winston.config.syslog.levels[level] <= 3 ) process.exit(1)
+    })
+
+  // Use the syslog levels
+  logger.setLevels( winston.config.syslog.levels )
+
+  // Override console statements
+  console.log = (...args) => logger.info.call(logger, ...args)
+  console.info = (...args) => logger.info.call(logger, ...args)
+  console.warn = (...args) => logger.warn.call(logger, ...args)
+  console.error = (...args) => logger.error.call(logger, ...args)
+  console.debug = (...args) => logger.debug.call(logger, ...args)
+
+  return Promise.resolve()
+}
 
 function getNodeModulesPath( isGlobal ) {
   return new Promise (
@@ -45,7 +122,7 @@ function loadPlugins( pluginPath ) {
 
                     // Avoid loading twice a plugin, if it's already loaded
                     if ( instance && !(plugin in plugins) ) {
-                      console.log( `[CORE] Loading plugin '${plugin}'...` )
+                      console.log( `[${chalk.blue('CORE')}] Loading plugin '${chalk.green(plugin)}'...` )
 
                       plugins[ plugin ] = true
 
@@ -68,7 +145,9 @@ function loadPlugins( pluginPath ) {
 
 export default () => {
   Promise.resolve()
-    .catch( err => console.log( err ) )
+    .catch( err => console.error( err ) )
+    // Override the console. statement with an extended logging functionality
+    .then( () => overrideConsole() )
     // Load global plugins
     .then( () => getNodeModulesPath( /*isGlobal:*/ true ) )
     .then( path => loadPlugins( path ) )

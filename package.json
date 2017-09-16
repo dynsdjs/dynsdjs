@@ -28,9 +28,11 @@
   ],
   "devDependencies": {
     "babili-webpack-plugin": "^0.1.2",
+    "chalk": "^2.1.0",
     "glob": "^7.1.2",
     "native-dns": "~0.7.0",
     "node-cache": "~4.1.1",
-    "webpack": "^3.3.0"
+    "webpack": "^3.3.0",
+    "winston": "^2.3.1"
   }
 }
