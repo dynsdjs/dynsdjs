@@ -20,7 +20,7 @@ const port = process.env.DNSPORT || 53,
         useClones: false
       }),
       // Supported resources
-      dnsResources = process.env.DNSRESOURCES ? process.env.DNSRESOURCES.split( ',' ) : 'A,AAAA,NS,CNAME,PTR,NAPTR,TXT,MX,SRV,SOA,TLSA'.split( ',' )
+      dnsResources = process.env.DNSRESOURCES ? process.env.DNSRESOURCES.split( ',' ) : 'A,AAAA,NS,CNAME,PTR,NAPTR,TXT,MX,SRV,SOA,TLSA'.split( ',' ),
       // Server Handlers
       tcpServer  = dns.createTCPServer(),
       udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),
