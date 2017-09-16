@@ -36,13 +36,14 @@ function emitAsPromise( resolve, reject, me, eventName, data ) {
         promises.push(
           new Promise (
             ( resolve, reject ) => {
-              console.log( `[CORE] Waiting for '${listener}' to finish the '${eventName}' event...` )
               return listener( resolve, reject, data )
             }
           )
         )
       }
     )
+
+  console.log( `[CORE] Dispatched '${eventName}' event. Waiting for plugins to complete...` )
 
   Promise
     .all( promises )
