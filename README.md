@@ -28,8 +28,7 @@ $ dynsd # sudo is required to bind port 80 and 53
 You can configure `dynsdjs` through Environment variables
 
 - `DNSPORT` for the DNS service ( default is `53` )
-- `DNSRESOURCES` to define a list of supported resources. Must be a string separated by comma.
-  Default: `A,AAAA,NS,CNAME,PTR,NAPTR,TXT,MX,SRV,SOA,TLSA`
+- `DNSRESOURCES` to define a list of supported resources. Must be a string separated by comma ( default is `A,AAAA,NS,CNAME,PTR,NAPTR,TXT,MX,SRV,SOA,TLSA` )
 
 ## DNS Resources
 
@@ -46,7 +45,7 @@ See also [package.json](package.json#L17) as a real world example.
 
 ## Plugins
 
-You can extend this Daemon by creating a package that has a name that starts with `dynsdjs-plugin` prefix. In order to use it, it's just required to install it in the current `dynsdjs` folder. For eg.:
+You can extend this Daemon by creating a package that has a name that starts with `dynsdjs-plugin` prefix. In order to use it, it's just required to install it globally or in the current working directory, so `dynsdjs` will be able to auto-detect it.
 
 ```
 $ npm install -g dynsdjs-plugin-api
