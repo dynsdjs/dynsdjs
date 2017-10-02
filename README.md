@@ -95,15 +95,15 @@ This is an example of valid structure:
 
 ```json
 {
-  A: {
-    name: 'awesomedomain.local',
-    address: '0.0.0.0',
-    ttl: 600
+  "A": {
+    "name": "awesomedomain.local",
+    "address": "0.0.0.0",
+    "ttl": 600
   },
-  AAAA: {
-    name: 'awesomedomain.local',
-    address: '::',
-    ttl: 600
+  "AAAA": {
+    "name": "awesomedomain.local",
+    "address": "::",
+    "ttl": 600
   }
 }
 ```
