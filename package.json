@@ -33,6 +33,7 @@
     "native-dns": "~0.7.0",
     "node-cache": "~4.1.1",
     "webpack": "^3.3.0",
+    "webpack-source-map-support": "^2.0.1",
     "winston": "^2.3.1"
   }
 }
