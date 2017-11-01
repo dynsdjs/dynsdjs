@@ -1,9 +1,13 @@
 const path = require('path'),
       webpack = require('webpack'),
+      package = require('./package.json')
       BabiliPlugin = require('babili-webpack-plugin'),
       WebpackSourceMapSupport = require('webpack-source-map-support')
 
 module.exports = function( env ) {
+  const filename = package.main.replace( 'dist/', '' ),
+        libraryName = filename.replace( '.js', '' )
+
   let config = {
     entry: './src/',
     target: 'node',
@@ -19,8 +23,8 @@ module.exports = function( env ) {
     },
     output: {
       path: path.resolve(__dirname, 'dist'),
-      filename: 'Dynsd.js',
-      library: 'Dynsd',
+      filename: filename,
+      library: libraryName,
       libraryTarget: 'umd2'
     },
     plugins: []
