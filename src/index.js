@@ -33,21 +33,19 @@ function overrideConsole() {
   const colorize = level => {
     let ret
 
-    switch ( winston.config.syslog.levels[level] ) {
+    switch ( winston.config.npm.levels[level] ) {
       case 0:
-      case 1:
-      case 2:
-      case 3:
         ret = chalk.red( level.toUpperCase() )
         break
-      case 4:
+      case 1:
         ret = chalk.yellow( level.toUpperCase() )
         break
-      case 5:
-      case 6:
+      case 2:
+      case 3:
         ret = chalk.blue( level.toUpperCase() )
         break
-      case 7:
+      case 4:
+      case 5:
         ret = chalk.gray( level.toUpperCase() )
         break
     }
@@ -68,11 +66,8 @@ function overrideConsole() {
     })
     .on( 'logging', (transport, level) => {
       // Terminate the process if an error is logged
-      if ( winston.config.syslog.levels[level] <= 3 ) process.exit(1)
+      if ( winston.config.npm.levels[level] == 0 ) process.exit(1)
     })
-
-  // Use the syslog levels
-  logger.setLevels( winston.config.syslog.levels )
 
   // Override console statements
   console.log = (...args) => logger.info.call(logger, ...args)
@@ -80,6 +75,22 @@ function overrideConsole() {
   console.warn = (...args) => logger.warn.call(logger, ...args)
   console.error = (...args) => logger.error.call(logger, ...args)
   console.debug = (...args) => logger.debug.call(logger, ...args)
+
+  return Promise.resolve()
+}
+
+function handleUnhandledRejection() {
+  process.on(
+    'unhandledRejection',
+    ( reason, p ) => {
+      console.warn(
+        `[${chalk.blue('CORE')}] Unhandled Rejection at: Promise`,
+        p,
+        'reason:',
+        reason
+      )
+    }
+  )
 
   return Promise.resolve()
 }
@@ -148,6 +159,8 @@ export default () => {
     .catch( err => console.error( err ) )
     // Override the console. statement with an extended logging functionality
     .then( () => overrideConsole() )
+    // Handle UnhandledRejection errors
+    .then( () => handleUnhandledRejection() )
     // Load global plugins
     .then( () => getNodeModulesPath( /*isGlobal:*/ true ) )
     .then( path => loadPlugins( path ) )
