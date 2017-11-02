@@ -12,7 +12,7 @@ const port = process.env.DNSPORT || 53,
         ],
         ipv6: [
           process.env.DNS6ALT1 || '2001:4860:4860::8888',
-          process.env.DNS6ALT1 || '2001:4860:4860::8844'
+          process.env.DNS6ALT2 || '2001:4860:4860::8844'
         ]
       },
       entries = new NodeCache({
