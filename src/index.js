@@ -64,9 +64,12 @@ function overrideConsole() {
         })
       ]
     })
-    .on( 'logging', (transport, level) => {
+    .on( 'logged', (info) => {
       // Terminate the process if an error is logged
-      if ( winston.config.npm.levels[level] == 0 ) process.exit(1)
+      if ( info.indexOf( 'ERROR' ) !== -1 ) {
+        console.trace()
+        process.exit(1)
+      }
     })
 
   // Override console statements
