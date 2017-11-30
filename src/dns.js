@@ -15,6 +15,7 @@ const port = process.env.DNSPORT || 53,
           process.env.DNS6ALT2 || '2001:4860:4860::8844'
         ]
       },
+      verboseLog = ( process.env.VERBOSE == 'true' ),
       entries = new NodeCache({
         // From <https://www.npmjs.com/package/node-cache>
         // "You should set false if you want to save mutable objects or other complex types with mutability involved and wanted."
@@ -31,7 +32,8 @@ function emitAsPromise( resolve, reject, me, eventName, data ) {
   const listeners = me.listeners( eventName ),
         promises = []
 
-  console.log( `[${chalk.blue('CORE')}] Dispatching '${chalk.green(eventName)}' event. Waiting for plugins to complete...` )
+  if ( verboseLog )
+    console.log( `[${chalk.blue('CORE')}] Dispatching '${chalk.green(eventName)}' event. Waiting for plugins to complete...` )
 
   listeners
     .forEach(
