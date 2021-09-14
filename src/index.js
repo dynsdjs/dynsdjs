@@ -20,15 +20,15 @@ function overrideConsole() {
     return chalk.grey( `${hours}:${minutes}:${seconds}` )
   }
 
-  const formatter = options => {
-    const timestamp = options.timestamp(),
-          level = colorize( options.level ),
-          message = options.message || '',
-          meta = ( options.meta && Object.keys( options.meta ).length ? '\n\t'+ JSON.stringify( options.meta ) : '' )
+  const customLogFormat = winston.format.printf((info) => {
+    const timestamp = info.timestamp,
+          level = colorize( info.level ),
+          message = info.message || '',
+          meta = ( info.metadata && Object.keys( info.metadata ).length ? '\n\t'+ JSON.stringify( info.metadata ) : '' )
 
     // Return string will be passed to logger.
     return `[${timestamp}] ${level}: ${message}${meta}`
-  }
+  })
 
   const colorize = level => {
     let ret
@@ -55,13 +55,16 @@ function overrideConsole() {
 
   // Configure the log output
   const logger = new winston
-    .Logger({
+    .createLogger({
+      format: winston.format.combine(
+        winston.format.metadata(),
+        winston.format.timestamp({
+          format: timestamp
+        }),
+        customLogFormat
+      ),
       transports: [
-        new (winston.transports.Console)({
-          prettyPrint: true,
-          timestamp: timestamp,
-          formatter: formatter
-        })
+        new winston.transports.Console()
       ]
     })
     .on( 'logged', (info) => {

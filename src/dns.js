@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import dns from 'native-dns'
+import dns from 'native-node-dns'
 import NodeCache from 'node-cache'
 import EventEmitter from 'events'
 

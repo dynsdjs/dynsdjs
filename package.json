@@ -27,13 +27,15 @@
     "dns"
   ],
   "devDependencies": {
-    "babili-webpack-plugin": "^0.1.2",
-    "chalk": "^2.1.0",
-    "glob": "^7.1.2",
-    "native-dns": "~0.7.0",
-    "node-cache": "~4.1.1",
-    "webpack": "^3.3.0",
-    "webpack-source-map-support": "^2.0.1",
-    "winston": "^2.3.1"
+    "chalk": "^4.1.2",
+    "glob": "^7.1.7",
+    "native-node-dns": "^0.7.6",
+    "node-cache": "~5.1.2",
+    "source-map-loader": "^3.0.0",
+    "source-map-support": "^0.5.20",
+    "terser-webpack-plugin": "^5.2.4",
+    "webpack": "^5.52.1",
+    "webpack-cli": "^4.8.0",
+    "winston": "^3.3.3"
   }
 }
