@@ -1,5 +1,6 @@
 import chalk from 'chalk'
 import dns from 'native-node-dns'
+import { consts } from 'native-node-dns-packet'
 import NodeCache from 'node-cache'
 import EventEmitter from 'events'
 
@@ -151,6 +152,11 @@ export default class extends EventEmitter {
     super()
     // Include the chalk reference
     this.chalk = chalk
+    // Include packet type consts
+    this.consts = {
+      NAME_TO_QTYPE: consts.NAME_TO_QTYPE,
+      QTYPE_TO_NAME: consts.QTYPE_TO_NAME
+    }
   }
 
   start() {
