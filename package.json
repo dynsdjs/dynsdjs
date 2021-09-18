@@ -14,7 +14,8 @@
     "build:watch": "webpack --watch",
     "prepublish": "webpack --env=prod",
     "start": "node ./bin/cli.js",
-    "test": "DYNSD_VERBOSE=true DYNSD_DNSPORT=5353 node ./bin/cli.js"
+    "test": "DYNSD_VERBOSE=true DYNSD_DNSPORT=5353 node ./bin/cli.js",
+    "test:google": "DYNSD_VERBOSE=true DYNSD_DNSPORT=5353 DYNSD_DNSALT1=8.8.8.8 DYNSD_DNSALT2=8.8.4.4 DYNSD_DNS6ALT1=2001:4860:4860::8888 DYNSD_DNS6ALT2=2001:4860:4860::8844 node ./bin/cli.js"
   },
   "bin": {
     "dynsd": "./bin/cli.js"
