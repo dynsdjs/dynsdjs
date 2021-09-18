@@ -138,7 +138,7 @@ function recurse( me, question, req, res ) {
       else
       {
         if ( verboseLog )
-          console.error(`[${chalk.blue('CORE')}] No recursive DNS provided. Will not resolve the requested DNS name ${chalk.green(question.name)}.`)
+          console.error(`[${chalk.blue('CORE')}] No recursive DNS provided. Will not resolve the requested DNS name ${chalk.green(question.name)}. Configured resolvers: `, resolvers)
         resolve()
       }
     }
