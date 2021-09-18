@@ -7,12 +7,12 @@ import EventEmitter from 'events'
 const port = process.env.DYNSD_DNSPORT || 53,
       resolvers = {
         ipv4: [
-          process.env.DYNSD_DNSALT1 || '8.8.8.8',
-          process.env.DYNSD_DNSALT2 || '8.8.4.4'
+          process.env.DYNSD_DNSALT1 || '',
+          process.env.DYNSD_DNSALT2 || ''
         ],
         ipv6: [
-          process.env.DYNSD_DNS6ALT1 || '2001:4860:4860::8888',
-          process.env.DYNSD_DNS6ALT2 || '2001:4860:4860::8844'
+          process.env.DYNSD_DNS6ALT1 || '',
+          process.env.DYNSD_DNS6ALT2 || ''
         ]
       },
       verboseLog = ( process.env.DYNSD_VERBOSE == 'true' ),
@@ -118,25 +118,34 @@ function recurse( me, question, req, res ) {
 
   return new Promise(
     ( resolve, reject ) => {
-      dns
-        .Request({
-          question: question,
-          server: {
-            address: resolver,
-            'port': 53,
-            'type': 'udp'
-          },
-          timeout: 1000
-        })
-        .on( 'timeout', () => reject( `>> DNS: Recursive question '${question.name}' went in timeout with resolver '${resolver}:53'` ) )
-        .on( 'message',
-          ( err, msg ) => {
-            msg.answer
-              .forEach( answer => res.answer.push( answer ) )
-          }
-        )
-        .on( 'end', resolve )
-        .send()
+      if (resolver)
+      {
+        dns
+          .Request({
+            question: question,
+            server: {
+              address: resolver,
+              'port': 53,
+              'type': 'udp'
+            },
+            timeout: 1000
+          })
+          .on( 'timeout', () => reject( `[${chalk.blue('DNS')}] Recursive question ${chalk.green(question.name)} went in timeout with resolver ${chalk.gray(`${resolver}:53`)}` ) )
+          .on( 'message',
+            ( err, msg ) => {
+              msg.answer
+                .forEach( answer => res.answer.push( answer ) )
+            }
+          )
+          .on( 'end', resolve )
+          .send()
+      }
+      else
+      {
+        if ( verboseLog )
+          console.error(`[${chalk.blue('CORE')}] No recursive DNS provided. Will not resolve the requested DNS name ${chalk.green(question.name)}.`)
+        resolve()
+      }
     }
   )
 }
