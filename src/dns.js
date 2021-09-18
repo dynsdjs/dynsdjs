@@ -4,25 +4,25 @@ import NodeCache from 'node-cache'
 import EventEmitter from 'events'
 
 // Configurations
-const port = process.env.DNSPORT || 53,
+const port = process.env.DYNSD_DNSPORT || 53,
       resolvers = {
         ipv4: [
-          process.env.DNSALT1 || '8.8.8.8',
-          process.env.DNSALT2 || '8.8.4.4'
+          process.env.DYNSD_DNSALT1 || '8.8.8.8',
+          process.env.DYNSD_DNSALT2 || '8.8.4.4'
         ],
         ipv6: [
-          process.env.DNS6ALT1 || '2001:4860:4860::8888',
-          process.env.DNS6ALT2 || '2001:4860:4860::8844'
+          process.env.DYNSD_DNS6ALT1 || '2001:4860:4860::8888',
+          process.env.DYNSD_DNS6ALT2 || '2001:4860:4860::8844'
         ]
       },
-      verboseLog = ( process.env.VERBOSE == 'true' ),
+      verboseLog = ( process.env.DYNSD_VERBOSE == 'true' ),
       entries = new NodeCache({
         // From <https://www.npmjs.com/package/node-cache>
         // "You should set false if you want to save mutable objects or other complex types with mutability involved and wanted."
         useClones: false
       }),
       // Supported resources
-      dnsResources = process.env.DNSRESOURCES ? process.env.DNSRESOURCES.split( ',' ) : 'A,AAAA,NS,CNAME,PTR,NAPTR,TXT,MX,SRV,SOA,TLSA'.split( ',' ),
+      dnsResources = process.env.DYNSD_DNSRESOURCES ? process.env.DYNSD_DNSRESOURCES.split( ',' ) : 'A,AAAA,NS,CNAME,PTR,NAPTR,TXT,MX,SRV,SOA,TLSA'.split( ',' ),
       // Server Handlers
       tcpServer  = dns.createTCPServer(),
       udp4Server = dns.createServer( { dgram_type: { type: 'udp4', reuseAddr: true } } ),

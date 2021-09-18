@@ -27,19 +27,19 @@ $ dynsd # sudo is required to bind port 80 and 53
 # Options
 You can configure `dynsdjs` through Environment variables
 
-- `DNSPORT` for the DNS service ( default is `53` )
-- `DNSRESOURCES` to define a list of supported resources. Must be a string separated by comma ( default is `A,AAAA,NS,CNAME,PTR,NAPTR,TXT,MX,SRV,SOA,TLSA` )
+- `DYNSD_DNSPORT` for the DNS service ( default is `53` )
+- `DYNSD_DNSRESOURCES` to define a list of supported resources. Must be a string separated by comma ( default is `A,AAAA,NS,CNAME,PTR,NAPTR,TXT,MX,SRV,SOA,TLSA` )
 
 ## DNS Resources
 
-The parameter `DNSRESOURCES` will help you to either restrict or extend the functionalities of the DNS Server. Either because of security reasons or whatever. This functionality will be a heavy whitelist, when resolving an internal domain present in the list ( injected through the `init` event ).
+The parameter `DYNSD_DNSRESOURCES` will help you to either restrict or extend the functionalities of the DNS Server. Either because of security reasons or whatever. This functionality will be a heavy whitelist, when resolving an internal domain present in the list ( injected through the `init` event ).
 
-So, if you for eg. set `DNSRESOURCES='A,AAAA'` ( like in the example down here ), this means that even if the plugins will return an extended entry with other resource records ( like MX, NS, etc. ) your DNS will answer only with A and AAAA records.
+So, if you for eg. set `DYNSD_DNSRESOURCES='A,AAAA'` ( like in the example down here ), this means that even if the plugins will return an extended entry with other resource records ( like MX, NS, etc. ) your DNS will answer only with A and AAAA records.
 
 ## Example
 
 ```bash
-$ DNSPORT=5353 DNSRESOURCES='A,AAAA' dynsd
+$ DYNSD_DNSPORT=5353 DYNSD_DNSRESOURCES='A,AAAA' dynsd
 ```
 See also [package.json](package.json#L17) as a real world example.
 

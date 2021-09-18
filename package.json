@@ -14,7 +14,7 @@
     "build:watch": "webpack --watch",
     "prepublish": "webpack --env=prod",
     "start": "node ./bin/cli.js",
-    "test": "HTTPPORT=8080 DNSPORT=5353 node ./bin/cli.js"
+    "test": "DYNSD_DNSPORT=5353 node ./bin/cli.js"
   },
   "bin": {
     "dynsd": "./bin/cli.js"
