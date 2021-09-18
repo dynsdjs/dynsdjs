@@ -35,18 +35,15 @@ function emitAsPromise( resolve, reject, me, eventName, data ) {
   if ( verboseLog )
     console.log( `[${chalk.blue('CORE')}] Dispatching '${chalk.green(eventName)}' event. Waiting for plugins to complete...` )
 
-  listeners
-    .forEach(
-      listener => {
-        promises.push(
-          new Promise (
-            ( resolve, reject ) => {
-              return listener( resolve, reject, data )
-            }
-          )
-        )
-      }
+  for ( const listener of listeners ) {
+    promises.push(
+      new Promise (
+        ( resolve, reject ) => {
+          return listener( resolve, reject, data )
+        }
+      )
     )
+  }
 
   Promise
     .all( promises )
@@ -57,24 +54,21 @@ function emitAsPromise( resolve, reject, me, eventName, data ) {
 function request( me, req, res ) {
   const promises = []
 
-  req.question.forEach( function ( question ) {
+  for (const question of req.question) {
     const entry = entries.get( question.name )
 
     if ( entry ) {
-      dnsResources
-        .forEach(
-          resource => {
-            if ( resource in entry )
-              res.answer
-                .push( dns[ resource ]( entry[ resource ] ) )
-          }
-        )
+      for ( const resource of dnsResources ) {
+        if ( resource in entry )
+          res.answer
+            .push( dns[ resource ]( entry[ resource ] ) )
+      }
     } else {
       promises.push(
         recurse( me, question, req, res )
       )
     }
-  })
+  }
 
   Promise
     .all( promises )
@@ -133,8 +127,9 @@ function recurse( me, question, req, res ) {
           .on( 'timeout', () => reject( `[${chalk.blue('DNS')}] Recursive question ${chalk.green(question.name)} went in timeout with resolver ${chalk.gray(`${resolver}:53`)}` ) )
           .on( 'message',
             ( err, msg ) => {
-              msg.answer
-                .forEach( answer => res.answer.push( answer ) )
+              for (const answer of msg.answer) {
+                res.answer.push( answer )
+              }
             }
           )
           .on( 'end', resolve )

@@ -130,26 +130,23 @@ function loadPlugins( pluginPath ) {
         ( err, files ) => {
             if ( err ) reject( err )
             else {
-              files
-                .forEach(
-                  ( plugin ) => {
-                    const instance = eval('require')( plugin )
+              for (let plugin of files) {
+                const instance = eval('require')( plugin )
 
-                    plugin = path.basename( plugin )
+                plugin = path.basename( plugin )
 
-                    // Avoid loading twice a plugin, if it's already loaded
-                    if ( instance && !(plugin in plugins) ) {
-                      console.log( `[${chalk.blue('CORE')}] Loading plugin '${chalk.green(plugin)}'...` )
+                // Avoid loading twice a plugin, if it's already loaded
+                if ( instance && !(plugin in plugins) ) {
+                  console.log( `[${chalk.blue('CORE')}] Loading plugin '${chalk.green(plugin)}'...` )
 
-                      plugins[ plugin ] = true
+                  plugins[ plugin ] = true
 
-                      if ( instance.default )
-                        new instance.default( dns )
-                      else if ( instance )
-                        new instance( dns )
-                    }
-                  }
-                )
+                  if ( instance.default )
+                    new instance.default( dns )
+                  else if ( instance )
+                    new instance( dns )
+                }
+              }
 
               // Finally resolve
               resolve()
